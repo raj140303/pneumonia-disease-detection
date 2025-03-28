@@ -6,7 +6,15 @@ from flask import Flask, request, jsonify, render_template
 from werkzeug.utils import secure_filename
 from tensorflow.keras.models import load_model
 
-model = load_model("model_weights/vgg_unfrozen_fixed.keras")
+# Disable TensorFlow warnings
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+# Load Model
+MODEL_PATH = "./vgg_unfrozen_fixed.keras"  # Ensure correct path
+if not os.path.exists(MODEL_PATH):
+    raise FileNotFoundError(f"Model file not found at {MODEL_PATH}")
+
+model = load_model(MODEL_PATH)
 
 # Flask app setup
 app = Flask(__name__)
@@ -24,10 +32,10 @@ def preprocess_image(img_path):
         if image is None:
             raise ValueError("Invalid image file")
         
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert BGR to RGB
-        image = cv2.resize(image, (128, 128))  # Resize to model input size
-        image = np.array(image) / 255.0  # Normalize
-        input_img = np.expand_dims(image, axis=0)  # Add batch dimension
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.resize(image, (128, 128))
+        image = np.array(image) / 255.0
+        input_img = np.expand_dims(image, axis=0)
         return input_img
     
     except Exception as e:
@@ -39,7 +47,6 @@ def getResult(img_path):
         if isinstance(input_img, str):
             return input_img 
         
-        # Model Prediction
         result = model.predict(input_img)
         print(f"Model Output: {result}")
         result01 = np.argmax(result, axis=1)
@@ -48,7 +55,7 @@ def getResult(img_path):
     except Exception as e:
         return str(e)
 
-# routes 
+# Routes 
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
@@ -68,7 +75,7 @@ def upload():
         f.save(file_path)
         print(f"File saved at: {file_path}")
 
-        
+        # Get Prediction
         result = getResult(file_path)
         if isinstance(result, str):
             return jsonify({'error': result}), 400
@@ -84,4 +91,4 @@ def health_check():
     return jsonify({'status': 'API is running'}), 200
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000, debug=True)
