@@ -1,4 +1,4 @@
-﻿absl-py==2.2.0
+absl-py==2.2.0
 asttokens==3.0.0
 astunparse==1.6.3
 blinker==1.9.0
@@ -73,7 +73,7 @@ six==1.17.0
 stack-data==0.6.3
 tensorboard==2.19.0
 tensorboard-data-server==0.7.2
-tensorflow==2.19.0
+tensorflow-cpu==2.19.0
 termcolor==2.5.0
 threadpoolctl==3.6.0
 tifffile==2025.3.13
